@@ -4,9 +4,9 @@
 Why starting this project?
 -----------------------
 Since URP don't support surface shader anymore, if shader graph alone can't fulfill all your needs and writing raw vert/frag lit shader supporting all light & shadow in URP is just too much work, try download this project, and start writing your own surface shader in URP.
-Surface shader makes shader development much easier and faster.
+Surface shader makes shader development much easier and faster in URP.
 
-How is this project looks like now?
+How flexible is it?
 -----------------------
  ![screenshot](https://i.imgur.com/pLNO4aR.png)
  
