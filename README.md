@@ -28,7 +28,7 @@ Features
 - can switch to any lighting function just by editing 1 line of code
 - support using your own lighting function .hlsl
 - can apply any additional local postprocess
-- everything is just regular shader files, no C#
+- everything are just regular .shader/.hlsl files, no C#
 
 Editable options
 -----------------------
