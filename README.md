@@ -64,7 +64,9 @@ How to try this surface shader in my own existing URP project, instead of clonin
 - UserSurfaceDataOutputFunction(...)
 - FinalPostProcessFrag(...)
 - #include "../LightingFunctionLibrary/XXXLightingFunction.hlsl"
+
 to see render result change.
+
 3)If you want to create your own "surface shader", clone a copy of NiloURPSurfaceShader_Example.shader before edit it, it is easier.
 
 Note
