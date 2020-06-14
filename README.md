@@ -51,7 +51,7 @@ Editable options
     };
     
 - lighting method .hlsl (you can pick PBR lit, PBR lit cel shade, or your own lighting function .hlsl)
-- local postprocess method to final color (e.g. lerp to red if the current object is selected)
+- local postprocess method to final color (e.g. support lerp to red if the current object is selected, by adding 1 line of code)
 
 Note
 -----------------------
