@@ -27,7 +27,29 @@ Features
 - can add extra custom pass (e.g. outline)
 - can select any lighting function just by editing 1 line of code
 - support using your own lighting function .hlsl
-- no 
+
+Editable options
+-----------------------
+- vertex
+    struct UserGeometryOutputData
+    {
+        float3 positionOS;
+        float3 normalOS;
+        float4 tangentOS;
+    };
+- fragment
+    struct UserSurfaceDataOutput
+    {
+        half3   albedo;             
+        half3   normalTS;          
+        half3   emission;     
+        half    metallic;
+        half    smoothness;
+        half    occlusion;                
+        half    alpha;          
+        half    alphaClipThreshold;
+    };  
+- lighting method .hlsl 
 
 Note
 -----------------------
