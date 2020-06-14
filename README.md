@@ -21,7 +21,7 @@ right sphere = default URP PBR lit shader
 
 Features
 -----------------------
-- surface shader is still a regular .shader file, can compile normally
+- "surface shader" is still a regular .shader file, can compile normally
 - SRP batcher compatible
 - can do everything shader graph can do, but 100% in code, version control friendly!
 - can add extra custom pass (e.g. outline pass)
