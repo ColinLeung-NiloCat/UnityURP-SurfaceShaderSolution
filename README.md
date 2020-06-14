@@ -61,11 +61,12 @@ How to try this in my own URP project?
 - UserGeometryDataOutputFunction(...)
 - UserSurfaceDataOutputFunction(...)
 - FinalPostProcessFrag(...)
+- #include "../LightingFunctionLibrary/XXXLightingFunction.hlsl"
 to see render change.
 
 Note
 -----------------------
-It is a very early WIP project and will change a lot, I hope you can clone the complete project, try create your own surface shader, see if the current surface shader design can fulfill your shader development needs.
+It is a very early WIP project and will change a lot, if you are interested, you can clone the complete project, try create your own surface shader, see if the current surface shader design can fulfill your shader development needs.
 
 Send me suggestion/bug report in Issues tab, or even pull request are very welcome!
 
