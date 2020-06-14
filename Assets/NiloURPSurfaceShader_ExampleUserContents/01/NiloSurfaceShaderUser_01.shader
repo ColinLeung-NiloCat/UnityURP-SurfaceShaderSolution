@@ -1,19 +1,19 @@
 //In user's perspective, this "URP surface shader" .shader file: 
 //- must be just one regular .shader file
-//- must be as short as possible, user should only need to care & write surface function, no other code should expose to user
-//- must be always SRP batcher compatible if user write uniforms correctly
+//- must be as short as possible, user should only need to care & write surface function, no lighting related code should be exposed to user
+//- must be always SRP batcher compatible if user write uniforms in CBUFFER correctly
 //- must be able to do everything that shader graph can already do
 //- must support DepthOnly & ShadowCaster pass with minimum code
-//- must not contain any lighting related concrete code in this file, only allowing "one line" selecting a reusable lighting function by user.
-//- must be "easy to use & flexible", even if performance cost is higher
+//- must not contain any lighting related concrete code in this file, only allowing "one line" selecting a reusable lighting function .hlsl by user.
+//- must be "very easy to use & flexible", even if performance cost is higher
 //- must support atleast 1 extra custom pass(e.g. outline pass) with minimum code
-//(WIP)- this file must be a template that can create in unity GUI (right click in project window, Create/Shader/NiloURPSurfaceShader)
+//(WIP)- this file must be a template that can be created using unity's editor GUI (right click in project window, Create/Shader/NiloURPSurfaceShader)
 
-//* In this file, user should only care sections with [User editable section] tag, other code can be ignored by user in most cases
+//* In this file, user should only care sections with [User editable section] tag, other code should be ignored by user in most cases
 
 //__________________________________________[User editable section]__________________________________________\\
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//change this to any unique path you like, so you can pick it in material's shader dropdown menu
+//change this line to any unique path you like, so you can pick it in material's shader dropdown menu
 Shader "Universal Render Pipeline/CustomSurfaceShader/01"
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 {
@@ -22,23 +22,35 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
         //__________________________________________[User editable section]__________________________________________\\
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //write all per material settings here, just like a regular .shader,
-        //make sure to match all uniforms inside CBUFFER_START(UnityPerMaterial) as well in the next [User editable section],
-        //to make SRP batcher compatible
+        //make sure to match all uniforms inside CBUFFER_START(UnityPerMaterial) in the next [User editable section],
+        //in order to make SRP batcher compatible
 
+        //just some example use case
+        [Header(base color)]
         [MainColor] _BaseColor("BaseColor", Color) = (1,1,1,1)
         [MainTexture] _BaseMap("BaseMap", 2D) = "white" {}
+
+        [Header(AO)]
         _AmbientOcclusion("_AmbientOcclusion", range(0,1)) = 1
+
+        [Header(Metallic)]
         _Metallic("_Metallic", range(0,1)) = 0
+
+        [Header(Smoothness)]
         _Smoothness("_Smoothness", range(0,1)) = 0.5
 
+        [Header(NormalMap)]
         [Toggle(_NORMALMAP)]_NORMALMAP("_NORMALMAP?", Float) = 1
         _NormalMap("_NormalMap", 2D) = "normal" {}
         _NormalMapScale("_NormalMapScale", float) = 1
 
+        [Header(SharedDataTexture)]
         _MetallicOcclusionSmoothnessTex("_MetallicOcclusionSmoothnessTex", 2D) = "white" {}
+
+        [Header(Emission)]
         [HDR]_Emission("_Emission", Color) = (0,0,0,1)
 
-        [Header(GameplayUse)]
+        [Header(GameplayUseColorOverride)]
         [Toggle(_IsTakingDamage)]_IsTakingDamage("_IsTakingDamage?", Float) = 0
         [Toggle(_IsSelected)]_IsSelected("_IsSelected?", Float) = 0
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -47,14 +59,13 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
     HLSLINCLUDE
 
     //this section are multi_compile keywords set by unity:
-    //-Sadly there seems to be no way to hide multi_compile from user, 
+    //-Sadly there seems to be no way to hide #pragma from user, 
     // so multi_compile must be copied to every .shader due to shaderlab's design,
-    // which makes updating this section almost impossible if we want to update this section after users already produced lots of .shader files
-    //-The only solution is to write a search and replace editor C# to auto upgrade surface shader
+    // which makes updating this section in future almost impossible once users already produced lots of .shader files
     //-The good part is exposing multi_compiles which makes user edit possible, 
     // but it contradict with the goal of surface shader - "hide lighting implementation from user"
     //==================================================================================================================
-    //copied from UniversalPipelineTemplateShader.shader, by Felipe Lira
+    //copied some URP multi_compile note from UniversalPipelineTemplateShader.shader by Felipe Lira
     //https://gist.github.com/phi-lira/225cd7c5e8545be602dca4eb5ed111ba
 
     // Universal Render Pipeline keywords
@@ -66,7 +77,7 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
     // 2) Invalid combinations are stripped. e.g variants with _MAIN_LIGHT_SHADOWS_CASCADE
     // but not _MAIN_LIGHT_SHADOWS are invalid and therefore stripped.
 
-    //100% copied from PBR shader graph's generated code
+    //100% copied from URP PBR shader graph's generated code
     // Pragmas
     #pragma prefer_hlslcc gles
     #pragma exclude_renderers d3d11_9x
@@ -74,7 +85,7 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
     #pragma multi_compile_fog
     #pragma multi_compile_instancing
 
-    //100% copied from PBR shader graph's generated code
+    //100% copied from URP PBR shader graph's generated code
     // Keywords
     #pragma multi_compile _ LIGHTMAP_ON
     #pragma multi_compile _ DIRLIGHTMAP_COMBINED
@@ -87,7 +98,7 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
     //==================================================================================================================
 
 
-    //the core .hlsl of the whole surface shader structure, must be included
+    //the core .hlsl of the whole URP surface shader structure, must be included
     #include "Assets/NiloCat/NiloURPSurfaceShader/NiloURPSurfaceShaderInclude.hlsl"
 
 
@@ -95,12 +106,12 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     //first, select a .hlsl which contains the concrete body of CalculateSurfaceFinalResultColor(...)
-    //you can pick any .hlsl you want in this list, default is NiloURPOfficialPBRLitLightingFunction.hlsl, you can always change it
-    //#include "Assets/NiloCat/NiloURPSurfaceShader/LightingFunctionLibrary/NiloURPOfficialPBRLitLightingFunction.hlsl"
+    //you can select any .hlsl you want here, default is NiloPBRLitLightingFunction.hlsl, you can always change it
+    //#include "Assets/NiloCat/NiloURPSurfaceShader/LightingFunctionLibrary/NiloPBRLitLightingFunction.hlsl"
     #include "Assets/NiloCat/NiloURPSurfaceShader/LightingFunctionLibrary/NiloToonLightingFunction.hlsl"
     //#include "..........YourOwnLightingFunction.hlsl" //you can always write your own!
 
-    //put your #pragma here as usual
+    //put your custom #pragma here as usual
     #pragma shader_feature _NORMALMAP 
     #pragma multi_compile _ _IsSelected
     #pragma multi_compile _ _IsTakingDamage
@@ -127,23 +138,49 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
     //IMPORTANT: write your surface shader's vertex logic here
     //you ONLY need to re-write things that you want to change, you don't need to fill in all data inside UserGeometryOutputData!
     //unedited data inside UserGeometryOutputData will always use it's default values, just like shader graph's master node's default values.
-    //see struct UserGeometryOutputData inside NiloURPSurfaceShaderInclude.hlsl for all editable data and their default values of UserGeometryOutputData
-    void UserGeometryDataOutputFunction(Attributes IN, inout UserGeometryOutputData surfaceData, bool isExtraCustomPass)
+    //see struct UserGeometryOutputData inside NiloURPSurfaceShaderInclude.hlsl for all editable data and default values of it
+    //copy the whole struct UserGeometryOutputData here as reference
+    /*
+    //100% same as PBR shader graph's vertex input
+    struct UserGeometryOutputData
     {
-        surfaceData.positionOS += sin(_Time * surfaceData.positionOS * 10) * 0.0125; //random sin() vertex anim
+        float3 positionOS;
+        float3 normalOS;
+        float4 tangentOS;
+    };
+    */
+    void UserGeometryDataOutputFunction(Attributes IN, inout UserGeometryOutputData geometryOutputData, bool isExtraCustomPass)
+    {
+        geometryOutputData.positionOS += sin(_Time * geometryOutputData.positionOS * 10) * 0.0125; //random sin() vertex anim
 
         if(isExtraCustomPass)
         {
-            surfaceData.positionOS += surfaceData.normalOS * 0.025;
+            geometryOutputData.positionOS += geometryOutputData.normalOS * 0.025; //outline enlarge mesh
         }
-        //repair normal vector after vertex animation
-        //...
+
+        //No need to write to other geometryOutputData.XXX if you don't want to edit geometryOutputData.XXX
+        //it will use default value instead
     }
 
     //MOST IMPORTANT: write your fragment surface shader logic here
     //you ONLY need re-write things that you want to change, you don't need to fill in all data inside SurfaceDataFrag!
     //unedited data inside SurfaceDataFrag will always use it's default value, just like shader graph's master node's default values.
     //see struct SurfaceDataFrag inside NiloURPSurfaceShaderInclude.hlsl for all editable data and their default values 
+    //copy the whole struct SurfaceDataFrag here as reference
+    /*
+    //100% same as PBR shader graph's fragment input
+    struct SurfaceDataFrag
+    {
+        half3   albedo;             
+        half3   normalTS;          
+        half3   emission;     
+        half    metallic;
+        half    smoothness;
+        half    occlusion;                
+        half    alpha;          
+        half    alphaClipThreshold;
+    };
+    */
     void SurfaceFunctionFrag(Varyings IN, inout SurfaceDataFrag surfaceData, bool isExtraCustomPass)
     {
         float2 uv = TRANSFORM_TEX(IN.uv, _BaseMap);
@@ -157,14 +194,17 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
 #endif
 
         half4 metallicOcclusionSmoothnessTex = SAMPLE_TEXTURE2D(_MetallicOcclusionSmoothnessTex, sampler_MetallicOcclusionSmoothnessTex, uv);
-        surfaceData.occlusion = _AmbientOcclusion * metallicOcclusionSmoothnessTex.g;
-        surfaceData.metallic = _Metallic * metallicOcclusionSmoothnessTex.r;
-        surfaceData.smoothness = _Smoothness * metallicOcclusionSmoothnessTex.a;
+        surfaceData.occlusion = _AmbientOcclusion * metallicOcclusionSmoothnessTex.g; //ao in g
+        surfaceData.metallic = _Metallic * metallicOcclusionSmoothnessTex.r; //metallic in r
+        surfaceData.smoothness = _Smoothness * metallicOcclusionSmoothnessTex.a; //smoothness in a (default)
 
         surfaceData.emission = _Emission;
 
+        //isExtraCustomPass is a compile time constant, writing this if() has 0 performance cost
+        //in this example, isExtraCustomPass is true only when executing the outline pass
         if(isExtraCustomPass)
         {
+            //make outline darker
             surfaceData.albedo = 0;
             surfaceData.smoothness = 0;
             surfaceData.metallic = 0;
@@ -173,8 +213,8 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
     }
 
     //IMPORTANT: write your final fragment color edit logic here
-    //usually for gameplay color override like "loop: lerp to red" for selectable targets, for flash white on take damage.
-    //you can replace this function by a #include "Your own .hlsl" call, to share logic between surface shaders
+    //usually for gameplay logic's color override like "loop: lerp to red" for selectable targets, or flash white on taking damage.
+    //you can replace this function by a #include "Your own .hlsl" call, to share logic between different surface shaders
     void FinalPostProcessFrag(Varyings IN, SurfaceDataFrag surfaceData, LightingData lightingData, inout half4 inputColor)
     {
 #if _IsTakingDamage
