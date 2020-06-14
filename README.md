@@ -39,7 +39,7 @@ Editable options
         float4 tangentOS;
     };
 
-    struct UserSurfaceDataOutput
+    struct UserSurfaceOutputData
     {
         half3   albedo;             
         half3   normalTS;          
