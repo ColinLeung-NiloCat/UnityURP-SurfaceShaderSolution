@@ -1,5 +1,5 @@
 # UnityURP-SurfaceShaderSolution
- A simple and flexible "surface shader" solution for Unity URP.
+ A tiny and flexible "surface shader" solution for Unity URP.
  
 Why writing this?
 -----------------------
@@ -24,8 +24,8 @@ Features
 - surface shader is still a regular .shader file, can compile normally
 - SRP batcher compatible
 - can do everything shader graph can do, but 100% in code, version control friendly!
-- can add extra custom pass (e.g. outline)
-- can select any lighting function just by editing 1 line of code
+- can add extra custom pass (e.g. outline pass)
+- can switch to any lighting function just by editing 1 line of code
 - support using your own lighting function .hlsl
 - can apply any local postprocess
 
@@ -51,14 +51,26 @@ Editable options
         half    alphaClipThreshold;
     };
     
-- lighting method .hlsl (you can pick PBR lit, PBR lit cel shade, or your own lighting function .hlsl)
-- local postprocess method to final color (e.g. support lerp to red if the current object is selected, by adding 1 line of code)
+- selectable lighting method .hlsl (you can pick PBR lit, PBR lit cel shade, or your own lighting function .hlsl)
+- local postprocess method (e.g. you can support lerp to red if the current object is selected, by adding 1 line of code)
+
+How to try this surface shader in my own existing URP project, instead of cloning a complete project?
+-----------------------
+1) only clone Assets/NiloCat/NiloURPSurfaceShader folder into your URP project
+2) In your project, open NiloURPSurfaceShader_Example.shader, edit 
+- UserGeometryDataOutputFunction(...)
+- UserSurfaceDataOutputFunction(...)
+- FinalPostProcessFrag(...)
+- #include "../LightingFunctionLibrary/XXXLightingFunction.hlsl"
+to see render change.
+3)If you want to create your own surface shader, clone a copy of NiloURPSurfaceShader_Example.shader before edit, it is easier.
 
 Note
 -----------------------
-It is a very early WIP project and will change a lot, I hope you can clone the complete project, try create your own surface shader, see if the current surface shader design can fulfill your shader development needs.
+It is a very early WIP project and will change a lot, but I need to finish this inorder to build more complex shaders on top of this project.
+If you are interested, you can clone it, try writing your own surface shader functions, see if the current surface shader design can fulfill your shader development needs.
 
-Send me suggestion/bug report in Issues tab, or even pull request are very welcome!
+You can send me suggestion/bug report/, or open dicussion/just chat in Issues tab, or even send pull request are very welcome!
 
 Editor environment requirement
 -----------------------
