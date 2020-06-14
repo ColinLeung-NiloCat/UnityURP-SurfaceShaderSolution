@@ -54,7 +54,7 @@ Editable options
     };
     
 - selectable lighting function .hlsl (you can pick PBR lit, PBR lit cel shade, or your own lighting function .hlsl)
-- local postprocess method (e.g. you can support lerp to red if the current object is selected, by adding 1 line of code)
+- local postprocess method (e.g. you can still add more color edit logic after lighting has finished)
 
 How to try this surface shader in my own existing URP project, instead of cloning a complete project?
 -----------------------
