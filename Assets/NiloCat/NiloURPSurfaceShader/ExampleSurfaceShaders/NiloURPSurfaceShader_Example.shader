@@ -185,7 +185,7 @@ Shader "Universal Render Pipeline/SurfaceShaders/ExampleSurfaceShader"
         half    alphaClipThreshold;
     };
     */
-    void SurfaceFunctionFrag(Varyings IN, inout UserSurfaceDataOutput surfaceData, bool isExtraCustomPass)
+    void UserSurfaceDataOutputFunction(Varyings IN, inout UserSurfaceDataOutput surfaceData, bool isExtraCustomPass)
     {
         float2 uv = TRANSFORM_TEX(IN.uv, _BaseMap);
         
@@ -328,7 +328,9 @@ Shader "Universal Render Pipeline/SurfaceShaders/ExampleSurfaceShader"
             //not using vertUniversalForward function due to outline pass edited positionOS by bool isExtraCustomPass in UserGeometryDataOutputFunction(...)
             //#pragma vertex vertUniversalForward
 
-            //we use this instead, this will inlcude positionOS change in UserGeometryDataOutputFunction, include outline's vertex logic.
+            //we use this instead, this will inlcude positionOS change in UserGeometryDataOutputFunction, include isExtraCustomPass(outlinePass)'s vertex logic.
+            //we only do this due to the fact that this shader's extra pass is an opaque outline pass
+            //where opaque outline should affacet depth write also
             #pragma vertex vertExtraCustomPass
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -1,8 +1,8 @@
 ﻿//see doc here: https://github.com/ColinLeung-NiloCat/UnityURP-SurfaceShaderSolution
 
 //ifndef+define safe guard for any .hlsl file
-#ifndef NiloSurfaceShaderInclude
-#define NiloSurfaceShaderInclude
+#ifndef NiloURPSurfaceShaderInclude
+#define NiloURPSurfaceShaderInclude
 
 //good "surface shader in URP" reference by Felipe Lira:
 //https://github.com/phi-lira/UniversalShaderExamples/blob/master/Assets/_ExampleScenes/CustomShading.hlsl
@@ -13,7 +13,11 @@
 //good "lit shader in URP" reference by URP:
 //create a new PBR shader graph, open it, right click on master node->show generated code
 
-//we always include these .hlsl if writing a lit shader in URP
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Include Section
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//we always include these .hlsl files if writing a lit shader in URP
 //100% copied from PBR shader graph's generated code
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
@@ -22,7 +26,12 @@
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
 #include "Packages/com.unity.shadergraph/ShaderGraphLibrary/ShaderVariablesFunctions.hlsl"
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Struct Section
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 //all possible data from unity application to any vertex shader will use this same struct
+//TODO: optimize it by remove unneeded thing using #pragma shader_feature / #define?
 struct Attributes
 {
     float3  positionOS  : POSITION;
@@ -45,6 +54,7 @@ struct Attributes
 };
 
 //all possible data from vertex shader to fragment shader will use this same struct
+//TODO: optimize it by remove unneeded thing using #pragma shader_feature / #define?
 struct Varyings
 {
     float2  uv                          : TEXCOORD0;
@@ -59,7 +69,7 @@ struct Varyings
     half3   tangentWS                   : TANGENT;
     half3   bitangentWS                 : TEXCOORD6;
 
-    half3   color                       : COLOR;
+    half4   color                       : COLOR;
 
     float4  positionCS                  : SV_POSITION;
 
@@ -75,7 +85,8 @@ struct Varyings
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Vertex Shader Section
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-float3 _LightDirection;
+
+float3 _LightDirection; //needed by shouldApplyShadowBias code path, will not break SRP batching because it is not a per material uniform
 float4 GetShadowPositionHClip(Varyings input)
 {
     float3 positionWS = input.positionWSAndFogFactor.xyz;
@@ -92,7 +103,7 @@ float4 GetShadowPositionHClip(Varyings input)
     return positionCS;
 }
 
-//same as PBR shader graph's vertex input
+//same as URP PBR shader graph's vertex input
 struct UserGeometryOutputData
 {
     float3 positionOS;
@@ -101,19 +112,19 @@ struct UserGeometryOutputData
 };
 
 //Forward declaration of UserGeometryDataOutputFunction. 
-//This function must be implemented by user, inside user's .shader surface shader file, even if it is empty
+//This function must be implemented by user, inside user's .shader surface shader file, even if it is empty(do nothing)
 void UserGeometryDataOutputFunction(Attributes IN, inout UserGeometryOutputData outputData, bool isExtraCustomPass);
 
 UserGeometryOutputData BuildUserGeometryOutputData(Attributes IN, bool isExtraCustomPass = false)
 {
     UserGeometryOutputData outputData;
 
-    //first, init UserGeometryOutputData by default value, just like in shader graph
+    //first, init UserGeometryOutputData by default value, just like shader graph's master node default value
     outputData.positionOS = IN.positionOS.xyz;
     outputData.normalOS = IN.normalOS;
     outputData.tangentOS = IN.tangentOS;
 
-    //then, let user optionally override UserGeometryOutputData's values
+    //then, let user optionally replace UserGeometryOutputData's values by user's own code
     UserGeometryDataOutputFunction(IN, outputData, isExtraCustomPass);
 
     return outputData;
@@ -121,7 +132,6 @@ UserGeometryOutputData BuildUserGeometryOutputData(Attributes IN, bool isExtraCu
 Varyings VertAllWork(Attributes IN, bool shouldApplyShadowBias = false, bool isExtraCustomPass = false)
 {
     UserGeometryOutputData geometryData = BuildUserGeometryOutputData(IN, isExtraCustomPass);
-
 
     Varyings OUT;
 
@@ -146,7 +156,7 @@ Varyings VertAllWork(Attributes IN, bool shouldApplyShadowBias = false, bool isE
 
     // Computes fog factor per-vertex.
     float fogFactor = ComputeFogFactor(vertexInput.positionCS.z);
-    OUT.positionWSAndFogFactor = float4(vertexInput.positionWS,fogFactor);
+    OUT.positionWSAndFogFactor = float4(vertexInput.positionWS,fogFactor); //pack together
 
     OUT.normalWS = vertexNormalInput.normalWS;
     OUT.tangentWS = vertexNormalInput.tangentWS;
@@ -154,11 +164,11 @@ Varyings VertAllWork(Attributes IN, bool shouldApplyShadowBias = false, bool isE
 
     OUT.positionCS = vertexInput.positionCS; 
 
-    //because this bool is a compile time constant, this if() line will be removed in shader compile time, 
+    //because this bool is a compile time constant, this if() line will be removed at shader compile time, 
     //so this if() line has 0 performance cost, don't worry.
     if(shouldApplyShadowBias)
     {
-        //write shadow bias code here
+        //shadow bias positionCS replace old positionCS completely
         OUT.positionCS = GetShadowPositionHClip(OUT);
     }
     return OUT;  
@@ -181,7 +191,7 @@ Varyings vertExtraCustomPass(Attributes IN)
 // Fragment Shader Section
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// defined in 9.0 URP, we can remove it in the future
+// already defined in 9.0 URP, we can remove it >= URP9.0
 /////////////////////////////////////////////////////////////////
 #if SHADER_LIBRARY_VERSION_MAJOR < 9
 // Computes the world space view direction (pointing towards the viewer).
@@ -202,7 +212,7 @@ float3 GetWorldSpaceViewDir(float3 positionWS)
 #endif
 /////////////////////////////////////////////////////////////////
 
-//100% same as PBR shader graph's fragment input
+//100% same as URP PBR shader graph's fragment input
 struct UserSurfaceDataOutput
 {
     half3   albedo;             
@@ -215,22 +225,23 @@ struct UserSurfaceDataOutput
     half    alphaClipThreshold;
 };
 //extra data for lighting, to help CalculateSurfaceFinalResultColor()
+//can add more in the future if needed
 struct LightingData 
 {
     Light   mainDirectionalLight;   //brightest direction light
-    int     additionalLightCount;   //use forloop, each loop calls GetAdditionalLight(i, positionWS) to get each addition light
+    int     additionalLightCount;   //get all additional light by using forloop, each loop calls GetAdditionalLight(i, positionWS) to get each addition light
     half3   bakedIndirectDiffuse;   //raw color from light probe or light map
-    half3   bakedIndirectSpecular;  //raw color from reflection probe, affected by UserSurfaceDataOutput.smoothness
+    half3   bakedIndirectSpecular;  //raw color from reflection probe, cubemap blurryness affected by UserSurfaceDataOutput.smoothness
     half3   viewDirectionWS;
     half3   reflectionDirectionWS;
     half3   normalWS;
     float3  positionWS;
 };
 
-// Forward declaration of SurfaceFunctionFrag. This function must be defined in user's .shader surface shader file
-void SurfaceFunctionFrag(Varyings IN, inout UserSurfaceDataOutput surfaceData, bool isExtraCustomPass);
+// Forward declaration of UserSurfaceDataOutputFunction. This function must be defined in user's .shader surface shader file
+void UserSurfaceDataOutputFunction(Varyings IN, inout UserSurfaceDataOutput surfaceData, bool isExtraCustomPass);
 
-UserSurfaceDataOutput ProduceUserSurfaceDataOutput(Varyings IN, bool isExtraCustomPass)
+UserSurfaceDataOutput BuildUserSurfaceDataOutput(Varyings IN, bool isExtraCustomPass)
 {
     UserSurfaceDataOutput surfaceData;
 
@@ -245,7 +256,7 @@ UserSurfaceDataOutput ProduceUserSurfaceDataOutput(Varyings IN, bool isExtraCust
     surfaceData.alphaClipThreshold = 0;     //default 0, not 0.5, following PBR shader graph's default value
 
     //then let user optionally override some/al; UserSurfaceDataOutput's values
-    SurfaceFunctionFrag(IN,surfaceData, isExtraCustomPass);
+    UserSurfaceDataOutputFunction(IN, surfaceData, isExtraCustomPass);
 
     //safe guard user provided data (not sure if it is needed, because it cost performance here)
     surfaceData.albedo = max(0,surfaceData.albedo);
@@ -259,9 +270,12 @@ UserSurfaceDataOutput ProduceUserSurfaceDataOutput(Varyings IN, bool isExtraCust
 
     return surfaceData;
 }
-// Forward declaration of CUSTOM_LIGHTING_FUNCTION. This function must be defined in user's .shader surface shader file
+
+// Forward declaration of CalculateSurfaceFinalResultColor. This function must be defined in user's .shader surface shader file
 half4 CalculateSurfaceFinalResultColor(Varyings IN, UserSurfaceDataOutput surfaceData, LightingData lightingData);
+// Forward declaration of FinalPostProcessFrag. This function must be defined in user's .shader surface shader file
 void FinalPostProcessFrag(Varyings IN, UserSurfaceDataOutput surfaceData, LightingData lightingData, inout half4 inputColor);
+
 half4 fragAllWork(Varyings IN, bool shouldOnlyDoAlphaClipAndEarlyExit = false, bool isExtraCustomPass = false)
 {
     //re-normalize all directions vector after interpolation
@@ -270,19 +284,21 @@ half4 fragAllWork(Varyings IN, bool shouldOnlyDoAlphaClipAndEarlyExit = false, b
     IN.bitangentWS = normalize(IN.bitangentWS);
 
     //use user's surface function to produce final surface data
-    UserSurfaceDataOutput surfaceData = ProduceUserSurfaceDataOutput(IN,isExtraCustomPass);
+    UserSurfaceDataOutput surfaceData = BuildUserSurfaceDataOutput(IN, isExtraCustomPass);
 
-    //do alphaclip asap
+    //do alphaclip as soon as possible
     clip(surfaceData.alpha - surfaceData.alphaClipThreshold);
 
-    //early exit if we only want to do alphaclip test, and don't care result color
-    //because this bool is a compile time constant, this if() line will be removed in shader compile time, 
+    //early exit if we only want to do alphaclip test, and don't care fragment shader's result rgba color
+    //because bool shouldOnlyDoAlphaClipAndEarlyExit is a compile time constant, this if() line will be removed in shader compile time, 
     //so this if() line has 0 performance cost, don't worry.
     if(shouldOnlyDoAlphaClipAndEarlyExit)
     {
         return 0;
     }
 
+    //========================================================================
+    // build LightingData, pass it to CalculateSurfaceFinalResultColor(...)
     //========================================================================
     LightingData lightingData;
     half3 T = IN.tangentWS.xyz;
@@ -295,14 +311,14 @@ half4 fragAllWork(Varyings IN, bool shouldOnlyDoAlphaClipAndEarlyExit = false, b
     half3 viewDirectionWS = normalize(GetWorldSpaceViewDir(positionWS));
     half3 reflectionDirectionWS = reflect(-viewDirectionWS, lightingData.normalWS);
     
-    // shadowCoord is position in shadow light space
+    // shadowCoord is position in shadow light space (must compute in fragment shader after URP 7.X)
     float4 shadowCoord = TransformWorldToShadowCoord(positionWS);
     lightingData.mainDirectionalLight = GetMainLight(shadowCoord);
 
-    //light probe or lightmap depends on unity's keyword "LIGHTMAP_ON"
+    //raw light probe or lightmap color, depends on unity's keyword "LIGHTMAP_ON"
     lightingData.bakedIndirectDiffuse = SAMPLE_GI(IN.uv2, SampleSH(lightingData.normalWS), lightingData.normalWS);
 
-    //reflection probe
+    //raw reflection probe color
     lightingData.bakedIndirectSpecular = GlossyEnvironmentReflection(reflectionDirectionWS, 1-surfaceData.smoothness, 1);//perceptualRoughness = 1 - smoothness
 
     lightingData.viewDirectionWS = viewDirectionWS;
@@ -323,7 +339,6 @@ half4 fragDoAlphaClipOnlyAndEarlyExit(Varyings IN) : SV_Target
 {
     return fragAllWork(IN, true);
 }
-
 half4 fragExtraCustomPass(Varyings IN) : SV_Target
 {
     return fragAllWork(IN, false, true);
