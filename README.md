@@ -67,7 +67,7 @@ to see render change.
 
 Note
 -----------------------
-It is a very early WIP project and will change a lot, but I need to finish this inorder to build more complex shaders on top of this project.
+It is a very early WIP project and will change a lot, but I need to finish this in order to build more complex shaders on top of this project.
 If you are interested, you can clone it, try writing your own surface shader functions, see if the current surface shader design can fulfill your shader development needs.
 
 You can send me suggestions/bug report/, or open discussion/just chat in Issues tab, or even send pull requests are very welcome!
