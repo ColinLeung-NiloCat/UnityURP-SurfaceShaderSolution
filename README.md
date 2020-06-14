@@ -14,6 +14,11 @@ left sphere = our surface shader with:
 
 right sphere = URP default PBR lit shader
 
+Note
+-----------------------
+It is a very early WIP project, I wish you can clone the project, try create your own surface shader, see if it fulfill your shader development needs.
+Send me suggestion/bug report in Issues tab, or even pull request is very welcome!
+
 Editor environment requirement
 -----------------------
 - URP 7.3.1 or above
