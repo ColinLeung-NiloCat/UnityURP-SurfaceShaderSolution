@@ -27,7 +27,8 @@ Features
 - can add extra custom pass (e.g. outline pass)
 - can switch to any lighting function just by editing 1 line of code
 - support using your own lighting function .hlsl
-- can apply any local postprocess
+- can apply any additional local postprocess
+- everything is just regular shader files, no C#
 
 Editable options
 -----------------------
