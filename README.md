@@ -13,8 +13,8 @@ How flexible is it?
  
 left sphere = our "surface shader" with:
 - vertex animation
-- added an extra custom pass (this image's surface shader used that  extra custom pass as an outline pass)
-- selectable lighting method (this image's surface shader selected a cel shade PBR lighting method)
+- added an extra custom pass (this image's "surface shader" used that  extra custom pass as an outline pass)
+- selectable lighting method (this image's "surface shader" selected a cel shade PBR lighting method)
 - local postprocess
 - auto support DepthOnly and ShadowCaster pass
 
