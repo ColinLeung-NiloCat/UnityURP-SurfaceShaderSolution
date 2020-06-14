@@ -54,6 +54,11 @@ Editable options
 - lighting method .hlsl (you can pick PBR lit, PBR lit cel shade, or your own lighting function .hlsl)
 - local postprocess method to final color (e.g. support lerp to red if the current object is selected, by adding 1 line of code)
 
+How to try this in my own URP project?
+-----------------------
+(1)clone Assets/NiloCat/NiloURPSurfaceShader folder into your URP project,
+(2)In your project, open NiloURPSurfaceShader_Example.shader, edit it to see render change.
+
 Note
 -----------------------
 It is a very early WIP project and will change a lot, I hope you can clone the complete project, try create your own surface shader, see if the current surface shader design can fulfill your shader development needs.
