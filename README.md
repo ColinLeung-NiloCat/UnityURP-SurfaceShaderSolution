@@ -3,7 +3,7 @@
  
 Why writing this?
 -----------------------
-Since URP don't support surface shader anymore, if shader graph alone can't fulfill all your needs and writing raw vert/frag lit shader supporting all light & shadow in URP is just too much work, try download this project, and start writing your own surface shader in URP.
+Since URP doesn't support surface shader anymore, if shader graph alone can't fulfill all your needs and writing raw vert/frag lit shader supporting all light & shadow in URP is just too much work, try download this project, and start writing your own surface shader in URP.
 Surface shader makes shader development much easier and faster in URP.
 
 How flexible is it?
@@ -39,7 +39,7 @@ Editable options
         float4 tangentOS;
     };
 
-    struct UserSurfaceDataOutput
+    struct UserSurfaceOutputData
     {
         half3   albedo;             
         half3   normalTS;          
@@ -67,10 +67,10 @@ to see render change.
 
 Note
 -----------------------
-It is a very early WIP project and will change a lot, but I need to finish this inorder to build more complex shaders on top of this project.
+It is a very early WIP project and will change a lot, but I need to finish this in order to build more complex shaders on top of this project.
 If you are interested, you can clone it, try writing your own surface shader functions, see if the current surface shader design can fulfill your shader development needs.
 
-You can send me suggestion/bug report/, or open dicussion/just chat in Issues tab, or even send pull request are very welcome!
+You can send me suggestions/bug report/, or open discussion/just chat in Issues tab, or even send pull requests are very welcome!
 
 Editor environment requirement
 -----------------------
