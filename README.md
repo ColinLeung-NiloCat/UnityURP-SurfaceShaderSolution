@@ -27,6 +27,7 @@ Features
 - can add extra custom pass (e.g. outline)
 - can select any lighting function just by editing 1 line of code
 - support using your own lighting function .hlsl
+- can apply any local postprocess
 
 Editable options
 -----------------------
@@ -55,9 +56,9 @@ Editable options
 
 Note
 -----------------------
-It is a very early WIP project, I hope you will clone the complete project, try create your own surface shader, see if the current surface shader design can fulfill your shader development needs.
+It is a very early WIP project and will change a lot, I hope you can clone the complete project, try create your own surface shader, see if the current surface shader design can fulfill your shader development needs.
 
-Send me suggestion/bug report in Issues tab, or even pull request is very welcome!
+Send me suggestion/bug report in Issues tab, or even pull request are very welcome!
 
 Editor environment requirement
 -----------------------
