@@ -54,8 +54,17 @@ Shader "Universal Render Pipeline/SurfaceShaders/ExampleSurfaceShader"
         [HDR]_EmissionColor("Color", Color) = (0,0,0)
         _EmissionMap("Emission", 2D) = "white" {}
 
+        //==================================================
+        // custom data
+        //==================================================
         [Header(Example_GameplayUse_FinalColorOverride)]
         [Toggle(_IsSelected)]_IsSelected("_IsSelected?", Float) = 0
+        [HDR]_SelectedLerpColor("_SelectedLerpColor", Color) = (1,0,0,0.8)
+
+        [Header(VertAnim)]
+        _NoiseStrength("_NoiseStrength", Range(-4,4)) = 1
+        [Header(Outline)]
+        _OutlineWidthOS("_OutlineWidthOS", Range(0,4)) = 1
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     }
 
@@ -102,7 +111,7 @@ Shader "Universal Render Pipeline/SurfaceShaders/ExampleSurfaceShader"
 
 
     //the core .hlsl of the whole URP surface shader structure, must be included
-    #include "Assets/NiloCat/NiloURPSurfaceShader/Core/NiloURPSurfaceShaderInclude.hlsl"
+    #include "../Core/NiloURPSurfaceShaderInclude.hlsl"
 
 
     //__________________________________________[User editable section]__________________________________________\\
@@ -110,8 +119,8 @@ Shader "Universal Render Pipeline/SurfaceShaders/ExampleSurfaceShader"
 
     //first, select a lighting function = a .hlsl which contains the concrete body of CalculateSurfaceFinalResultColor(...)
     //you can select any .hlsl you want here, default is NiloPBRLitCelShadeLightingFunction.hlsl, you can always change it
-    #include "Assets/NiloCat/NiloURPSurfaceShader/LightingFunctionLibrary/NiloPBRLitCelShadeLightingFunction.hlsl"
-    //#include "Assets/NiloCat/NiloURPSurfaceShader/LightingFunctionLibrary/NiloPBRLitLightingFunction.hlsl"
+    #include "../LightingFunctionLibrary/NiloPBRLitCelShadeLightingFunction.hlsl"
+    //#include "../LightingFunctionLibrary/NiloPBRLitLightingFunction.hlsl"
     //#include "..........YourOwnLightingFunction.hlsl" //you can always write your own!
 
     //put your custom #pragma here as usual
@@ -137,6 +146,9 @@ Shader "Universal Render Pipeline/SurfaceShaders/ExampleSurfaceShader"
     half _BumpScale;
     half4 _EmissionColor;
     half _Cutoff;
+    float _OutlineWidthOS;
+    half4 _SelectedLerpColor;
+    float _NoiseStrength;
     CBUFFER_END
 
     //IMPORTANT: write your surface shader's vertex logic here
@@ -155,11 +167,11 @@ Shader "Universal Render Pipeline/SurfaceShaders/ExampleSurfaceShader"
     */
     void UserGeometryDataOutputFunction(Attributes IN, inout UserGeometryOutputData geometryOutputData, bool isExtraCustomPass)
     {
-        geometryOutputData.positionOS += sin(_Time.y * dot(float3(1,1,1),geometryOutputData.positionOS) * 10) * 0.0125; //random sin() vertex anim
+        geometryOutputData.positionOS += sin(_Time.y * dot(float3(1,1,1),geometryOutputData.positionOS) * 10) * _NoiseStrength * 0.0125; //random sin() vertex anim
 
         if(isExtraCustomPass)
         {
-            geometryOutputData.positionOS += geometryOutputData.normalOS * 0.025; //outline pass needs to enlarge mesh
+            geometryOutputData.positionOS += geometryOutputData.normalOS *_OutlineWidthOS * 0.025; //outline pass needs to enlarge mesh
         }
 
         //No need to write all other geometryOutputData.XXX if you don't want to edit them.
@@ -223,7 +235,7 @@ Shader "Universal Render Pipeline/SurfaceShaders/ExampleSurfaceShader"
     void FinalPostProcessFrag(Varyings IN, UserSurfaceDataOutput surfaceData, LightingData lightingData, inout half4 inputColor)
     {
 #if _IsSelected
-        inputColor.rgb = lerp(inputColor.rgb,half3(1,0,0), (sin(_Time.y * 5) * 0.5 + 0.5));
+        inputColor.rgb = lerp(inputColor.rgb,_SelectedLerpColor.rgb, _SelectedLerpColor.a * (sin(_Time.y * 5) * 0.5 + 0.5));
 #endif
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
