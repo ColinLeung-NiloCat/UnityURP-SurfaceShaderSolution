@@ -6,16 +6,16 @@
 //- must be always SRP batcher compatible if user write uniforms in CBUFFER correctly
 //- must be able to do everything that shader graph can already do
 //- must support DepthOnly & ShadowCaster pass with minimum code
-//- must not contain any lighting related concrete code in this file, only allowing "one line" selecting a reusable lighting function .hlsl by user.
+//- must not contain any lighting related concrete code in this file, user should only need to "edit one line" selecting a reusable lighting function .hlsl.
 //- must be "very easy to use & flexible", even if performance cost is higher
 //- must support atleast 1 extra custom pass(e.g. outline pass) with minimum code
-//(WIP)- this file must be a template that can be created using unity's editor GUI (right click in project window, Create/Shader/NiloURPSurfaceShader)
+//(WIP)- this file must be a template that can be created using unity's editor GUI (right click in project window, Create/Shader/URPSurfaceShader)
 
-//* In this file, user should only care sections with [User editable section] tag, other code should be ignored by user in most cases
+//*** Inside this file, user should only care sections with [User editable section] tag, other code can be ignored by user in most cases ***
 
 //__________________________________________[User editable section]__________________________________________\\
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//change this line to any unique path you like, so you can pick it in material's shader dropdown menu
+//change this line to any unique path you like, so you can pick this shader in material's shader dropdown menu
 Shader "Universal Render Pipeline/CustomSurfaceShader/01"
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 {
@@ -23,37 +23,38 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
     {
         //__________________________________________[User editable section]__________________________________________\\
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //write all per material settings here, just like a regular .shader,
-        //make sure to match all uniforms inside CBUFFER_START(UnityPerMaterial) in the next [User editable section],
-        //in order to make SRP batcher compatible
+        //-Write all per material settings here, just like a regular .shader.
+        //-In order to make SRP batcher compatible,
+        //make sure to match all uniforms inside CBUFFER_START(UnityPerMaterial) in the next [User editable section]
+        
+        //below are just some example use case Properties
+        [Header(BaseColor)]
+        [MainColor] _BaseColor("Color", Color) = (0.5,0.5,0.5,1)
+        [MainTexture] _BaseMap("Albedo", 2D) = "white" {}
 
-        //just some example use case
-        [Header(base color)]
-        [MainColor] _BaseColor("BaseColor", Color) = (1,1,1,1)
-        [MainTexture] _BaseMap("BaseMap", 2D) = "white" {}
+        [Header(Alpha)]
+        _Cutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 
-        [Header(AO)]
-        _AmbientOcclusion("_AmbientOcclusion", range(0,1)) = 1
-
+        //Metallic workflow only
         [Header(Metallic)]
-        _Metallic("_Metallic", range(0,1)) = 0
+        [Gamma] _Metallic("Metallic", Range(0.0, 1.0)) = 0.0
 
         [Header(Smoothness)]
-        _Smoothness("_Smoothness", range(0,1)) = 0.5
+        _Smoothness("Smoothness", Range(0.0, 1.0)) = 0.5
 
         [Header(NormalMap)]
         [Toggle(_NORMALMAP)]_NORMALMAP("_NORMALMAP?", Float) = 1
-        _NormalMap("_NormalMap", 2D) = "normal" {}
-        _NormalMapScale("_NormalMapScale", float) = 1
+        _BumpMap("Normal Map", 2D) = "bump" {}
+        _BumpScale("Scale", Float) = 1.0
 
         [Header(SharedDataTexture)]
-        _MetallicOcclusionSmoothnessTex("_MetallicOcclusionSmoothnessTex", 2D) = "white" {}
+        _MetallicR_OcclusionG_SmoothnessA_Tex("_MetallicR_OcclusionG_SmoothnessA_Tex", 2D) = "white" {}
 
         [Header(Emission)]
-        [HDR]_Emission("_Emission", Color) = (0,0,0,1)
+        [HDR]_EmissionColor("Color", Color) = (0,0,0)
+        _EmissionMap("Emission", 2D) = "white" {}
 
         [Header(GameplayUseColorOverride)]
-        [Toggle(_IsTakingDamage)]_IsTakingDamage("_IsTakingDamage?", Float) = 0
         [Toggle(_IsSelected)]_IsSelected("_IsSelected?", Float) = 0
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     }
@@ -67,7 +68,7 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
     //-The good part is exposing multi_compiles which makes user edit possible, 
     // but it contradict with the goal of surface shader - "hide lighting implementation from user"
     //==================================================================================================================
-    //copied some URP multi_compile note from UniversalPipelineTemplateShader.shader by Felipe Lira
+    //copied URP multi_compile note from Felipe Lira's UniversalPipelineTemplateShader.shader
     //https://gist.github.com/phi-lira/225cd7c5e8545be602dca4eb5ed111ba
 
     // Universal Render Pipeline keywords
@@ -107,7 +108,7 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
     //__________________________________________[User editable section]__________________________________________\\
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //first, select a .hlsl which contains the concrete body of CalculateSurfaceFinalResultColor(...)
+    //first, select a lighting function = .hlsl which contains the concrete body of CalculateSurfaceFinalResultColor(...)
     //you can select any .hlsl you want here, default is NiloPBRLitLightingFunction.hlsl, you can always change it
     //#include "Assets/NiloCat/NiloURPSurfaceShader/LightingFunctionLibrary/NiloPBRLitLightingFunction.hlsl"
     #include "Assets/NiloCat/NiloURPSurfaceShader/LightingFunctionLibrary/NiloToonLightingFunction.hlsl"
@@ -116,25 +117,26 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
     //put your custom #pragma here as usual
     #pragma shader_feature _NORMALMAP 
     #pragma multi_compile _ _IsSelected
-    #pragma multi_compile _ _IsTakingDamage
 
     //define texture & sampler as usual
     TEXTURE2D(_BaseMap);
     SAMPLER(sampler_BaseMap);
-    TEXTURE2D(_NormalMap);
-    SAMPLER(sampler_NormalMap);
-    TEXTURE2D(_MetallicOcclusionSmoothnessTex);
-    SAMPLER(sampler_MetallicOcclusionSmoothnessTex);
+    TEXTURE2D(_BumpMap);
+    SAMPLER(sampler_BumpMap);
+    TEXTURE2D(_MetallicR_OcclusionG_SmoothnessA_Tex);
+    SAMPLER(sampler_MetallicR_OcclusionG_SmoothnessA_Tex);
+    TEXTURE2D(_EmissionMap);
+    SAMPLER(sampler_EmissionMap);
 
     //you must write all your per material uniforms inside this CBUFFER to make SRP batcher compatible
     CBUFFER_START(UnityPerMaterial)
     float4 _BaseMap_ST;
     half4 _BaseColor;
-    half _AmbientOcclusion;
     half _Metallic;
     half _Smoothness;
-    half _NormalMapScale;
-    half3 _Emission;
+    half _BumpScale;
+    half3 _EmissionColor;
+    half _Cutoff;
     CBUFFER_END
 
     //IMPORTANT: write your surface shader's vertex logic here
@@ -190,17 +192,18 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
         half4 color = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv) * _BaseColor;
         surfaceData.albedo = color.rgb;
         surfaceData.alpha = color.a;
+        surfaceData.alphaClipThreshold = _Cutoff;
 
 #if _NORMALMAP
-        surfaceData.normalTS = UnpackNormalScale(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, uv), _NormalMapScale);
+        surfaceData.normalTS = UnpackNormalScale(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, uv), _BumpScale);
 #endif
 
-        half4 metallicOcclusionSmoothnessTex = SAMPLE_TEXTURE2D(_MetallicOcclusionSmoothnessTex, sampler_MetallicOcclusionSmoothnessTex, uv);
-        surfaceData.occlusion = _AmbientOcclusion * metallicOcclusionSmoothnessTex.g; //ao in g
-        surfaceData.metallic = _Metallic * metallicOcclusionSmoothnessTex.r; //metallic in r
-        surfaceData.smoothness = _Smoothness * metallicOcclusionSmoothnessTex.a; //smoothness in a (default)
+        half4 MetallicR_OcclusionG_SmoothnessA = SAMPLE_TEXTURE2D(_MetallicR_OcclusionG_SmoothnessA_Tex, sampler_MetallicR_OcclusionG_SmoothnessA_Tex, uv);
+        surfaceData.occlusion = MetallicR_OcclusionG_SmoothnessA.g; //ao in g
+        surfaceData.metallic = _Metallic * MetallicR_OcclusionG_SmoothnessA.r; //metallic in r
+        surfaceData.smoothness = _Smoothness * MetallicR_OcclusionG_SmoothnessA.a; //smoothness in a
 
-        surfaceData.emission = _Emission;
+        surfaceData.emission = _EmissionColor * SAMPLE_TEXTURE2D(_EmissionMap, sampler_EmissionMap, uv);
 
         //isExtraCustomPass is a compile time constant, writing this if() has 0 performance cost
         //in this example, isExtraCustomPass is true only when executing the outline pass
@@ -219,9 +222,6 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
     //you can replace this function by a #include "Your own .hlsl" call, to share logic between different surface shaders
     void FinalPostProcessFrag(Varyings IN, UserSurfaceDataOutput surfaceData, LightingData lightingData, inout half4 inputColor)
     {
-#if _IsTakingDamage
-        inputColor.rgb = lerp(inputColor.rgb,half3(1,1,1), (sin(_Time.y * 80) * 0.5 + 0.5) > 0.5 ? 1 : 0.4);
-#endif
 #if _IsSelected
         inputColor.rgb = lerp(inputColor.rgb,half3(1,0,0), (sin(_Time.y * 5) * 0.5 + 0.5));
 #endif
