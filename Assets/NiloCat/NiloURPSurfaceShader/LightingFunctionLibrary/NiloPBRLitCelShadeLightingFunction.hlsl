@@ -1,7 +1,7 @@
 ﻿//see doc here: https://github.com/ColinLeung-NiloCat/UnityURP-SurfaceShaderSolution
 
-#ifndef NiloToonLightingFunction
-#define NiloToonLightingFunction
+#ifndef NiloPBRLitCelShadeLightingFunction_INCLUDE
+#define NiloPBRLitCelShadeLightingFunction_INCLUDE
 
 // Based on Minimalist CookTorrance BRDF
 // Implementation is slightly different from original derivation: http://www.thetenthplanet.de/archives/255
@@ -31,7 +31,7 @@ half3 DirectBDRFCelShade(BRDFData brdfData, half3 normalWS, half3 lightDirection
 
     half LoH2 = LoH * LoH;
     half specularTerm = brdfData.roughness2 / ((d * d) * max(0.1h, LoH2) * brdfData.normalizationTerm);
-    specularTerm = floor(specularTerm);//cel shade add line
+    specularTerm = floor(specularTerm + 0.5);//***********************cel shade add line**************************
     // On platforms where half actually means something, the denominator has a risk of overflow
     // clamp below was added specifically to "fix" that, but dx compiler (we convert bytecode to metal/gles)
     // sees that specularTerm have only non-negative terms, so it skips max(0,..) in clamp (leaving only min(100,...))
@@ -50,12 +50,13 @@ half3 DirectBDRFCelShade(BRDFData brdfData, half3 normalWS, half3 lightDirection
 half3 LightingPhysicallyBasedCelShade(BRDFData brdfData, half3 lightColor, half3 lightDirectionWS, half lightAttenuation, half3 normalWS, half3 viewDirectionWS)
 {
     half NdotL = saturate(dot(normalWS, lightDirectionWS));
-    NdotL = smoothstep(0.45,0.5,NdotL);//cel shade add line
+    NdotL = smoothstep(0.45,0.5,NdotL);//***********************cel shade add line**************************
     half3 radiance = lightColor * (lightAttenuation * NdotL);
     return DirectBDRFCelShade(brdfData, normalWS, lightDirectionWS, viewDirectionWS) * radiance;
 }
 half3 LightingPhysicallyBasedCelShade(BRDFData brdfData, Light light, half3 normalWS, half3 viewDirectionWS)
 {
+    light.shadowAttenuation = smoothstep(0.45,0.5,light.shadowAttenuation);//***********************cel shade add line**************************
     return LightingPhysicallyBasedCelShade(brdfData, light.color, light.direction, light.distanceAttenuation * light.shadowAttenuation, normalWS, viewDirectionWS);
 }
 
@@ -70,8 +71,10 @@ half4 CalculateSurfaceFinalResultColor(Varyings IN, UserSurfaceDataOutput surfac
     half3 rgb = GlobalIllumination(brdfData, lightingData.bakedIndirectDiffuse, surfaceData.occlusion, lightingData.normalWS, lightingData.viewDirectionWS);
 
     // LightingPhysicallyBased computes direct light contribution.
+    //this line adds main directional light's contribution 
     rgb += LightingPhysicallyBasedCelShade(brdfData, lightingData.mainDirectionalLight, lightingData.normalWS, lightingData.viewDirectionWS);
 
+    //this forloop adds each additional light's contribution
     int additionalLightCount = lightingData.additionalLightCount;
     for(int i = 0; i < additionalLightCount; i++)
     {
@@ -79,9 +82,11 @@ half4 CalculateSurfaceFinalResultColor(Varyings IN, UserSurfaceDataOutput surfac
         rgb += LightingPhysicallyBasedCelShade(brdfData, light, lightingData.normalWS, lightingData.viewDirectionWS);
     }
 
+    //emission
     rgb += surfaceData.emission * surfaceData.occlusion;
 
-     float fogFactor = IN.positionWSAndFogFactor.w;
+    //fog
+    float fogFactor = IN.positionWSAndFogFactor.w;
     // Mix the pixel color with fogColor. You can optionaly use MixFogColor to override the fogColor
     // with a custom one.
     rgb = MixFog(rgb, fogFactor);

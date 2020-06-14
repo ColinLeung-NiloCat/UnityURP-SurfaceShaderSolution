@@ -1,7 +1,10 @@
 ﻿//see doc here: https://github.com/ColinLeung-NiloCat/UnityURP-SurfaceShaderSolution
 
-#ifndef NiloPBRLitLightingFunction
-#define NiloPBRLitLightingFunction
+//this lighting function's result should be 99% the same as URP PBR lit shader if material properties are the same
+//if there are big difference, it is a bug
+
+#ifndef NiloPBRLitLightingFunction_INCLUDE
+#define NiloPBRLitLightingFunction_INCLUDE
 
 half4 CalculateSurfaceFinalResultColor(Varyings IN, UserSurfaceDataOutput surfaceData, LightingData lightingData)
 {
@@ -14,8 +17,10 @@ half4 CalculateSurfaceFinalResultColor(Varyings IN, UserSurfaceDataOutput surfac
     half3 rgb = GlobalIllumination(brdfData, lightingData.bakedIndirectDiffuse, surfaceData.occlusion, lightingData.normalWS, lightingData.viewDirectionWS);
 
     // LightingPhysicallyBased computes direct light contribution.
+    //this line adds main directional light's contribution 
     rgb += LightingPhysicallyBased(brdfData, lightingData.mainDirectionalLight, lightingData.normalWS, lightingData.viewDirectionWS);
 
+    //this forloop adds each additional light's contribution
     int additionalLightCount = lightingData.additionalLightCount;
     for(int i = 0; i < additionalLightCount; i++)
     {
@@ -23,10 +28,11 @@ half4 CalculateSurfaceFinalResultColor(Varyings IN, UserSurfaceDataOutput surfac
         rgb += LightingPhysicallyBased(brdfData, light, lightingData.normalWS, lightingData.viewDirectionWS);
     }
 
+    //emissive
     rgb += surfaceData.emission;
 
+    //fog
     float fogFactor = IN.positionWSAndFogFactor.w;
-
     // Mix the pixel color with fogColor. You can optionaly use MixFogColor to override the fogColor
     // with a custom one.
     rgb = MixFog(rgb, fogFactor);

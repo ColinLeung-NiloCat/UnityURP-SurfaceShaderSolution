@@ -329,7 +329,7 @@ half4 fragAllWork(Varyings IN, bool shouldOnlyDoAlphaClipAndEarlyExit = false, b
     lightingData.additionalLightCount = GetAdditionalLightsCount();
     lightingData.positionWS = positionWS;
 
-    //TODO: what if user want postprocess before fog?
+    //TODO: what if user want postprocess both before fog and after?
     half4 finalColor = CalculateSurfaceFinalResultColor(IN, surfaceData, lightingData);
     FinalPostProcessFrag(IN, surfaceData, lightingData, finalColor);
 
