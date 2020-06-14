@@ -163,13 +163,13 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
     }
 
     //MOST IMPORTANT: write your fragment surface shader logic here
-    //you ONLY need re-write things that you want to change, you don't need to fill in all data inside SurfaceDataFrag!
-    //unedited data inside SurfaceDataFrag will always use it's default value, just like shader graph's master node's default values.
-    //see struct SurfaceDataFrag inside NiloURPSurfaceShaderInclude.hlsl for all editable data and their default values 
-    //copy the whole struct SurfaceDataFrag here as reference
+    //you ONLY need re-write things that you want to change, you don't need to fill in all data inside UserSurfaceDataOutput!
+    //unedited data inside UserSurfaceDataOutput will always use it's default value, just like shader graph's master node's default values.
+    //see struct UserSurfaceDataOutput inside NiloURPSurfaceShaderInclude.hlsl for all editable data and their default values 
+    //copy the whole struct UserSurfaceDataOutput here as reference
     /*
     //100% same as PBR shader graph's fragment input
-    struct SurfaceDataFrag
+    struct UserSurfaceDataOutput
     {
         half3   albedo;             
         half3   normalTS;          
@@ -181,7 +181,7 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
         half    alphaClipThreshold;
     };
     */
-    void SurfaceFunctionFrag(Varyings IN, inout SurfaceDataFrag surfaceData, bool isExtraCustomPass)
+    void SurfaceFunctionFrag(Varyings IN, inout UserSurfaceDataOutput surfaceData, bool isExtraCustomPass)
     {
         float2 uv = TRANSFORM_TEX(IN.uv, _BaseMap);
         
@@ -215,7 +215,7 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
     //IMPORTANT: write your final fragment color edit logic here
     //usually for gameplay logic's color override like "loop: lerp to red" for selectable targets, or flash white on taking damage.
     //you can replace this function by a #include "Your own .hlsl" call, to share logic between different surface shaders
-    void FinalPostProcessFrag(Varyings IN, SurfaceDataFrag surfaceData, LightingData lightingData, inout half4 inputColor)
+    void FinalPostProcessFrag(Varyings IN, UserSurfaceDataOutput surfaceData, LightingData lightingData, inout half4 inputColor)
     {
 #if _IsTakingDamage
         inputColor.rgb = lerp(inputColor.rgb,half3(1,1,1), (sin(_Time.y * 80) * 0.5 + 0.5) > 0.5 ? 1 : 0.4);

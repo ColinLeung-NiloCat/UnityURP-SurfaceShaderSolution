@@ -1,7 +1,7 @@
 ﻿#ifndef NiloURPOfficialPBRLitLightingFunction
 #define NiloURPOfficialPBRLitLightingFunction
 
-half4 CalculateSurfaceFinalResultColor(Varyings IN, SurfaceDataFrag surfaceData, LightingData lightingData)
+half4 CalculateSurfaceFinalResultColor(Varyings IN, UserSurfaceDataOutput surfaceData, LightingData lightingData)
 {
     // BRDFData holds energy conserving diffuse and specular material reflections and its roughness.
     // It's easy to plugin your own shading fuction. You just need replace LightingPhysicallyBased function

@@ -201,7 +201,7 @@ float3 GetWorldSpaceViewDir(float3 positionWS)
 /////////////////////////////////////////////////////////////////
 
 //100% same as PBR shader graph's fragment input
-struct SurfaceDataFrag
+struct UserSurfaceDataOutput
 {
     half3   albedo;             
     half3   normalTS;          
@@ -218,7 +218,7 @@ struct LightingData
     Light   mainDirectionalLight;   //brightest direction light
     int     additionalLightCount;   //use forloop, each loop calls GetAdditionalLight(i, positionWS) to get each addition light
     half3   bakedIndirectDiffuse;   //raw color from light probe or light map
-    half3   bakedIndirectSpecular;  //raw color from reflection probe, affected by SurfaceDataFrag.smoothness
+    half3   bakedIndirectSpecular;  //raw color from reflection probe, affected by UserSurfaceDataOutput.smoothness
     half3   viewDirectionWS;
     half3   reflectionDirectionWS;
     half3   normalWS;
@@ -226,13 +226,13 @@ struct LightingData
 };
 
 // Forward declaration of SurfaceFunctionFrag. This function must be defined in user's .shader surface shader file
-void SurfaceFunctionFrag(Varyings IN, inout SurfaceDataFrag surfaceData, bool isExtraCustomPass);
+void SurfaceFunctionFrag(Varyings IN, inout UserSurfaceDataOutput surfaceData, bool isExtraCustomPass);
 
-SurfaceDataFrag ProduceSurfaceDataFrag(Varyings IN, bool isExtraCustomPass)
+UserSurfaceDataOutput ProduceUserSurfaceDataOutput(Varyings IN, bool isExtraCustomPass)
 {
-    SurfaceDataFrag surfaceData;
+    UserSurfaceDataOutput surfaceData;
 
-    //first init SurfaceDataFrag by default value (following PBR shader graph's default value)
+    //first init UserSurfaceDataOutput by default value (following PBR shader graph's default value)
     surfaceData.albedo = 1;                 //default white             
     surfaceData.normalTS = half3(0,0,1);    //default pointing out, no difference to vertex normal        
     surfaceData.emission = 0;               //default black  
@@ -242,7 +242,7 @@ SurfaceDataFrag ProduceSurfaceDataFrag(Varyings IN, bool isExtraCustomPass)
     surfaceData.alpha = 1;                  //default fully opaque          
     surfaceData.alphaClipThreshold = 0;     //default 0, not 0.5, following PBR shader graph's default value
 
-    //then let user optionally override some/al; SurfaceDataFrag's values
+    //then let user optionally override some/al; UserSurfaceDataOutput's values
     SurfaceFunctionFrag(IN,surfaceData, isExtraCustomPass);
 
     //safe guard user provided data (not sure if it is needed, because it cost performance here)
@@ -258,8 +258,8 @@ SurfaceDataFrag ProduceSurfaceDataFrag(Varyings IN, bool isExtraCustomPass)
     return surfaceData;
 }
 // Forward declaration of CUSTOM_LIGHTING_FUNCTION. This function must be defined in user's .shader surface shader file
-half4 CalculateSurfaceFinalResultColor(Varyings IN, SurfaceDataFrag surfaceData, LightingData lightingData);
-void FinalPostProcessFrag(Varyings IN, SurfaceDataFrag surfaceData, LightingData lightingData, inout half4 inputColor);
+half4 CalculateSurfaceFinalResultColor(Varyings IN, UserSurfaceDataOutput surfaceData, LightingData lightingData);
+void FinalPostProcessFrag(Varyings IN, UserSurfaceDataOutput surfaceData, LightingData lightingData, inout half4 inputColor);
 half4 fragAllWork(Varyings IN, bool shouldOnlyDoAlphaClipAndEarlyExit = false, bool isExtraCustomPass = false)
 {
     //re-normalize all directions vector after interpolation
@@ -268,7 +268,7 @@ half4 fragAllWork(Varyings IN, bool shouldOnlyDoAlphaClipAndEarlyExit = false, b
     IN.bitangentWS = normalize(IN.bitangentWS);
 
     //use user's surface function to produce final surface data
-    SurfaceDataFrag surfaceData = ProduceSurfaceDataFrag(IN,isExtraCustomPass);
+    UserSurfaceDataOutput surfaceData = ProduceUserSurfaceDataOutput(IN,isExtraCustomPass);
 
     //do alphaclip asap
     clip(surfaceData.alpha - surfaceData.alphaClipThreshold);
