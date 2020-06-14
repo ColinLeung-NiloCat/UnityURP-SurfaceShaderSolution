@@ -1,4 +1,6 @@
-﻿//ifndef+define safe guard for any .hlsl file
+﻿//see doc here: https://github.com/ColinLeung-NiloCat/UnityURP-SurfaceShaderSolution
+
+//ifndef+define safe guard for any .hlsl file
 #ifndef NiloSurfaceShaderInclude
 #define NiloSurfaceShaderInclude
 

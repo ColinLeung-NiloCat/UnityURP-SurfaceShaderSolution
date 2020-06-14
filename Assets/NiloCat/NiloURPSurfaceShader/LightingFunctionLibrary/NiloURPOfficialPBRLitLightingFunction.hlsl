@@ -1,4 +1,6 @@
-﻿#ifndef NiloURPOfficialPBRLitLightingFunction
+﻿//see doc here: https://github.com/ColinLeung-NiloCat/UnityURP-SurfaceShaderSolution
+
+#ifndef NiloURPOfficialPBRLitLightingFunction
 #define NiloURPOfficialPBRLitLightingFunction
 
 half4 CalculateSurfaceFinalResultColor(Varyings IN, UserSurfaceDataOutput surfaceData, LightingData lightingData)

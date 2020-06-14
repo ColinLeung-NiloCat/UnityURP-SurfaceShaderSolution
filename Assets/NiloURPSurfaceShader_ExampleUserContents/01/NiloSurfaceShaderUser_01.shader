@@ -1,3 +1,5 @@
+//see doc here: https://github.com/ColinLeung-NiloCat/UnityURP-SurfaceShaderSolution
+
 //In user's perspective, this "URP surface shader" .shader file: 
 //- must be just one regular .shader file
 //- must be as short as possible, user should only need to care & write surface function, no lighting related code should be exposed to user

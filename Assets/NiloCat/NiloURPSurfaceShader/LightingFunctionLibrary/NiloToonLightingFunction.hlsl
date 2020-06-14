@@ -1,4 +1,6 @@
-﻿#ifndef NiloToonLightingFunction
+﻿//see doc here: https://github.com/ColinLeung-NiloCat/UnityURP-SurfaceShaderSolution
+
+#ifndef NiloToonLightingFunction
 #define NiloToonLightingFunction
 
 // Based on Minimalist CookTorrance BRDF
