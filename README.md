@@ -56,8 +56,8 @@ Editable options
 
 How to try this in my own URP project?
 -----------------------
-(1)clone Assets/NiloCat/NiloURPSurfaceShader folder into your URP project,
-(2)In your project, open NiloURPSurfaceShader_Example.shader, edit it to see render change.
+1) clone Assets/NiloCat/NiloURPSurfaceShader folder into your URP project,
+2) In your project, open NiloURPSurfaceShader_Example.shader, edit it to see render change.
 
 Note
 -----------------------
