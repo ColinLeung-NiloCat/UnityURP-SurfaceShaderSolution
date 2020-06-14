@@ -50,7 +50,8 @@ Editable options
         half    alphaClipThreshold;
     };
     
-- lighting method .hlsl 
+- lighting method .hlsl (you can pick PBR lit, PBR lit cel shade, or your own lighting function .hlsl)
+- local postprocess method to final color (e.g. lerp to red if the current object is selected)
 
 Note
 -----------------------
