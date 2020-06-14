@@ -30,14 +30,14 @@ Features
 
 Editable options
 -----------------------
-- vertex
+
     struct UserGeometryOutputData
     {
         float3 positionOS;
         float3 normalOS;
         float4 tangentOS;
     };
-- fragment
+
     struct UserSurfaceDataOutput
     {
         half3   albedo;             
@@ -48,7 +48,8 @@ Editable options
         half    occlusion;                
         half    alpha;          
         half    alphaClipThreshold;
-    };  
+    };
+    
 - lighting method .hlsl 
 
 Note
