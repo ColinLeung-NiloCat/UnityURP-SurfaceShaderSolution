@@ -5,7 +5,7 @@ Since URP don't support surface shader anymore, if shader graph alone can't fulf
 Surface shader makes shader development much easier and faster.
  ![screenshot](https://i.imgur.com/pLNO4aR.png)
  
-left sphere = our surface shader with
+left sphere = our surface shader with:
 - vertex animation
 - added an extra custom pass (this image's surface shader used that extra pass as an outline pass)
 - selectable lighting method (this image's surface shader selected a cel shade PBR lighting method)
