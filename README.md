@@ -24,8 +24,8 @@ Features
 - surface shader is still a regular .shader file, can compile normally
 - SRP batcher compatible
 - can do everything shader graph can do, but 100% in code, version control friendly!
-- can add extra custom pass (e.g. outline)
-- can select any lighting function just by editing 1 line of code
+- can add extra custom pass (e.g. outline pass)
+- can switch to any lighting function just by editing 1 line of code
 - support using your own lighting function .hlsl
 - can apply any local postprocess
 
@@ -51,10 +51,10 @@ Editable options
         half    alphaClipThreshold;
     };
     
-- lighting method .hlsl (you can pick PBR lit, PBR lit cel shade, or your own lighting function .hlsl)
-- local postprocess method to final color (e.g. support lerp to red if the current object is selected, by adding 1 line of code)
+- selectable lighting method .hlsl (you can pick PBR lit, PBR lit cel shade, or your own lighting function .hlsl)
+- local postprocess method to final color (e.g. you can support lerp to red if the current object is selected, by adding 1 line of code)
 
-How to try this in my own URP project?
+How to try this surface shaderc in my own URP project?
 -----------------------
 1) clone Assets/NiloCat/NiloURPSurfaceShader folder into your URP project
 2) In your project, open NiloURPSurfaceShader_Example.shader, edit 
@@ -63,6 +63,7 @@ How to try this in my own URP project?
 - FinalPostProcessFrag(...)
 - #include "../LightingFunctionLibrary/XXXLightingFunction.hlsl"
 to see render change.
+3)If you want to create your own surface shader, clone a copy of NiloURPSurfaceShader_Example.shader is easier.
 
 Note
 -----------------------
