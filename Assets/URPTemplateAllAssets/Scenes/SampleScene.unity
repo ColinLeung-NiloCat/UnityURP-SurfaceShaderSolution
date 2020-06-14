@@ -283,7 +283,7 @@ GameObject:
   - component: {fileID: 315144260}
   - component: {fileID: 315144259}
   m_Layer: 0
-  m_Name: Sphere - PBR lit
+  m_Name: Sphere - URP PBR lit
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -376,7 +376,7 @@ GameObject:
   - component: {fileID: 473257237}
   - component: {fileID: 473257236}
   m_Layer: 0
-  m_Name: Sphere - SurfaceShader Toon
+  m_Name: Sphere - SurfaceShader PBR lit CelShade
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1305,7 +1305,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2043510342}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.843, y: 1.456, z: 1.386}
+  m_LocalPosition: {x: 1.843, y: 1.456, z: 0.89}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}

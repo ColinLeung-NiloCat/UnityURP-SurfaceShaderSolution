@@ -155,7 +155,7 @@ Shader "Universal Render Pipeline/SurfaceShaders/ExampleSurfaceShader"
     */
     void UserGeometryDataOutputFunction(Attributes IN, inout UserGeometryOutputData geometryOutputData, bool isExtraCustomPass)
     {
-        geometryOutputData.positionOS += sin(_Time * geometryOutputData.positionOS * 10) * 0.0125; //random sin() vertex anim
+        geometryOutputData.positionOS += sin(_Time.y * dot(float3(1,1,1),geometryOutputData.positionOS) * 10) * 0.0125; //random sin() vertex anim
 
         if(isExtraCustomPass)
         {
@@ -203,7 +203,7 @@ Shader "Universal Render Pipeline/SurfaceShaders/ExampleSurfaceShader"
         surfaceData.metallic = _Metallic * MetallicR_OcclusionG_SmoothnessA.r; //metallic in r
         surfaceData.smoothness = _Smoothness * MetallicR_OcclusionG_SmoothnessA.a; //smoothness in a
 
-        surfaceData.emission = _EmissionColor.rgb * _EmissionColor.a * SAMPLE_TEXTURE2D(_EmissionMap, sampler_EmissionMap, uv);
+        surfaceData.emission = _EmissionColor.rgb * _EmissionColor.aaa * SAMPLE_TEXTURE2D(_EmissionMap, sampler_EmissionMap, uv).rgb;
 
         //isExtraCustomPass is a compile time constant, so writing if() here has 0 performance cost.
         //In this example shader, isExtraCustomPass is true only when executing the custom pass (outline pass)

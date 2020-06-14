@@ -147,6 +147,8 @@ Varyings VertAllWork(Attributes IN, bool shouldApplyShadowBias = false, bool isE
     OUT.uv = IN.uv;    
 #if LIGHTMAP_ON
     OUT.uv2 = IN.uv2.xy * unity_LightmapST.xy + unity_LightmapST.zw;
+#else
+    OUT.uv2 = IN.uv2;
 #endif
     OUT.uv34 = float4(IN.uv3,IN.uv4);
     OUT.uv56 = float4(IN.uv5,IN.uv6);
@@ -327,8 +329,10 @@ half4 fragAllWork(Varyings IN, bool shouldOnlyDoAlphaClipAndEarlyExit = false, b
     lightingData.additionalLightCount = GetAdditionalLightsCount();
     lightingData.positionWS = positionWS;
 
+    //TODO: what if user want postprocess before fog?
     half4 finalColor = CalculateSurfaceFinalResultColor(IN, surfaceData, lightingData);
     FinalPostProcessFrag(IN, surfaceData, lightingData, finalColor);
+
     return finalColor;
 }
 half4 fragUniversalForward(Varyings IN) : SV_Target
