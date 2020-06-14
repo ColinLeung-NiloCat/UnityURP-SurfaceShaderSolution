@@ -102,16 +102,16 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
 
 
     //the core .hlsl of the whole URP surface shader structure, must be included
-    #include "Assets/NiloCat/NiloURPSurfaceShader/NiloURPSurfaceShaderInclude.hlsl"
+    #include "Assets/NiloCat/NiloURPSurfaceShader/Core/NiloURPSurfaceShaderInclude.hlsl"
 
 
     //__________________________________________[User editable section]__________________________________________\\
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //first, select a lighting function = .hlsl which contains the concrete body of CalculateSurfaceFinalResultColor(...)
-    //you can select any .hlsl you want here, default is NiloPBRLitLightingFunction.hlsl, you can always change it
-    //#include "Assets/NiloCat/NiloURPSurfaceShader/LightingFunctionLibrary/NiloPBRLitLightingFunction.hlsl"
-    #include "Assets/NiloCat/NiloURPSurfaceShader/LightingFunctionLibrary/NiloToonLightingFunction.hlsl"
+    //first, select a lighting function = a .hlsl which contains the concrete body of CalculateSurfaceFinalResultColor(...)
+    //you can select any .hlsl you want here, default is NiloToonLightingFunction.hlsl, you can always change it
+    //#include "Assets/NiloCat/NiloURPSurfaceShader/LightingFunctionLibrary/NiloToonLightingFunction.hlsl"
+    #include "Assets/NiloCat/NiloURPSurfaceShader/LightingFunctionLibrary/NiloPBRLitLightingFunction.hlsl"
     //#include "..........YourOwnLightingFunction.hlsl" //you can always write your own!
 
     //put your custom #pragma here as usual
@@ -135,7 +135,7 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
     half _Metallic;
     half _Smoothness;
     half _BumpScale;
-    half3 _EmissionColor;
+    half4 _EmissionColor;
     half _Cutoff;
     CBUFFER_END
 
@@ -203,7 +203,7 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
         surfaceData.metallic = _Metallic * MetallicR_OcclusionG_SmoothnessA.r; //metallic in r
         surfaceData.smoothness = _Smoothness * MetallicR_OcclusionG_SmoothnessA.a; //smoothness in a
 
-        surfaceData.emission = _EmissionColor * SAMPLE_TEXTURE2D(_EmissionMap, sampler_EmissionMap, uv);
+        surfaceData.emission = _EmissionColor.rgb * _EmissionColor.a * SAMPLE_TEXTURE2D(_EmissionMap, sampler_EmissionMap, uv);
 
         //isExtraCustomPass is a compile time constant, writing this if() has 0 performance cost
         //in this example, isExtraCustomPass is true only when executing the outline pass
