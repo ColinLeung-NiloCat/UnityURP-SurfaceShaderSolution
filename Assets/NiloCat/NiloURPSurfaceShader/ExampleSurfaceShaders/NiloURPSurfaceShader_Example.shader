@@ -3,20 +3,20 @@
 //In user's perspective, this "URP surface shader" .shader file: 
 //- must be just one regular .shader file
 //- must be as short as possible, user should only need to care & write surface function, no lighting related code should be exposed to user
+//- must not contain any lighting related concrete code in this file, user should only need to "edit one line" selecting a reusable lighting function .hlsl.
 //- must be always SRP batcher compatible if user write uniforms in CBUFFER correctly
 //- must be able to do everything that shader graph can already do
 //- must support DepthOnly & ShadowCaster pass with minimum code
-//- must not contain any lighting related concrete code in this file, user should only need to "edit one line" selecting a reusable lighting function .hlsl.
-//- must be "very easy to use & flexible", even if performance cost is higher
 //- must support atleast 1 extra custom pass(e.g. outline pass) with minimum code
-//(WIP)- this file must be a template that can be created using unity's editor GUI (right click in project window, Create/Shader/URPSurfaceShader)
+//- must be "very easy to use & flexible", even if performance cost is higher
+//- (future update)this file must be a template file that can be created using unity's editor GUI (right click in project window, Create/Shader/URPSurfaceShader)
 
 //*** Inside this file, user should only care sections with [User editable section] tag, other code can be ignored by user in most cases ***
 
 //__________________________________________[User editable section]__________________________________________\\
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //change this line to any unique path you like, so you can pick this shader in material's shader dropdown menu
-Shader "Universal Render Pipeline/CustomSurfaceShader/01"
+Shader "Universal Render Pipeline/SurfaceShaders/ExampleSurfaceShader"
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 {
     Properties
@@ -27,15 +27,15 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
         //-In order to make SRP batcher compatible,
         //make sure to match all uniforms inside CBUFFER_START(UnityPerMaterial) in the next [User editable section]
         
-        //below are just some example use case Properties
+        //below are just some example use case Properties, you can write whatever you want here
         [Header(BaseColor)]
-        [MainColor] _BaseColor("Color", Color) = (0.5,0.5,0.5,1)
+        [MainColor] _BaseColor("Color", Color) = (1,1,1,1)
         [MainTexture] _BaseMap("Albedo", 2D) = "white" {}
 
         [Header(Alpha)]
         _Cutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 
-        //Metallic workflow only
+        //Metallic workflow
         [Header(Metallic)]
         [Gamma] _Metallic("Metallic", Range(0.0, 1.0)) = 0.0
 
@@ -54,7 +54,7 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
         [HDR]_EmissionColor("Color", Color) = (0,0,0)
         _EmissionMap("Emission", 2D) = "white" {}
 
-        [Header(GameplayUseColorOverride)]
+        [Header(Example_GameplayUse_FinalColorOverride)]
         [Toggle(_IsSelected)]_IsSelected("_IsSelected?", Float) = 0
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     }
@@ -65,7 +65,7 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
     //-Sadly there seems to be no way to hide #pragma from user, 
     // so multi_compile must be copied to every .shader due to shaderlab's design,
     // which makes updating this section in future almost impossible once users already produced lots of .shader files
-    //-The good part is exposing multi_compiles which makes user edit possible, 
+    //-The good part is exposing multi_compiles which makes editing by user possible, 
     // but it contradict with the goal of surface shader - "hide lighting implementation from user"
     //==================================================================================================================
     //copied URP multi_compile note from Felipe Lira's UniversalPipelineTemplateShader.shader
@@ -109,9 +109,9 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     //first, select a lighting function = a .hlsl which contains the concrete body of CalculateSurfaceFinalResultColor(...)
-    //you can select any .hlsl you want here, default is NiloToonLightingFunction.hlsl, you can always change it
-    //#include "Assets/NiloCat/NiloURPSurfaceShader/LightingFunctionLibrary/NiloToonLightingFunction.hlsl"
-    #include "Assets/NiloCat/NiloURPSurfaceShader/LightingFunctionLibrary/NiloPBRLitLightingFunction.hlsl"
+    //you can select any .hlsl you want here, default is NiloPBRLitCelShadeLightingFunction.hlsl, you can always change it
+    #include "Assets/NiloCat/NiloURPSurfaceShader/LightingFunctionLibrary/NiloPBRLitCelShadeLightingFunction.hlsl"
+    //#include "Assets/NiloCat/NiloURPSurfaceShader/LightingFunctionLibrary/NiloPBRLitLightingFunction.hlsl"
     //#include "..........YourOwnLightingFunction.hlsl" //you can always write your own!
 
     //put your custom #pragma here as usual
@@ -141,11 +141,11 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
 
     //IMPORTANT: write your surface shader's vertex logic here
     //you ONLY need to re-write things that you want to change, you don't need to fill in all data inside UserGeometryOutputData!
-    //unedited data inside UserGeometryOutputData will always use it's default values, just like shader graph's master node's default values.
-    //see struct UserGeometryOutputData inside NiloURPSurfaceShaderInclude.hlsl for all editable data and default values of it
-    //copy the whole struct UserGeometryOutputData here as reference
+    //All unedited data inside UserGeometryOutputData will always use it's default value, just like shader graph's master node's default values.
+    //see struct UserGeometryOutputData inside NiloURPSurfaceShaderInclude.hlsl for all editable data and default values
+    //copy the whole UserGeometryOutputData struct here for your reference
     /*
-    //100% same as PBR shader graph's vertex input
+    //100% same as URP PBR shader graph's vertex input
     struct UserGeometryOutputData
     {
         float3 positionOS;
@@ -159,20 +159,20 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
 
         if(isExtraCustomPass)
         {
-            geometryOutputData.positionOS += geometryOutputData.normalOS * 0.025; //outline enlarge mesh
+            geometryOutputData.positionOS += geometryOutputData.normalOS * 0.025; //outline pass needs to enlarge mesh
         }
 
-        //No need to write to other geometryOutputData.XXX if you don't want to edit geometryOutputData.XXX
-        //it will use default value instead
+        //No need to write all other geometryOutputData.XXX if you don't want to edit them.
+        //They will use default value instead
     }
 
-    //MOST IMPORTANT: write your fragment surface shader logic here
+    //MOST IMPORTANT: write your surface shader's fragment logic here
     //you ONLY need re-write things that you want to change, you don't need to fill in all data inside UserSurfaceDataOutput!
-    //unedited data inside UserSurfaceDataOutput will always use it's default value, just like shader graph's master node's default values.
+    //All unedited data inside UserSurfaceDataOutput will always use it's default value, just like shader graph's master node's default values.
     //see struct UserSurfaceDataOutput inside NiloURPSurfaceShaderInclude.hlsl for all editable data and their default values 
-    //copy the whole struct UserSurfaceDataOutput here as reference
+    //copy the whole UserSurfaceDataOutput struct here for your reference
     /*
-    //100% same as PBR shader graph's fragment input
+    //100% same as URP PBR shader graph's fragment input
     struct UserSurfaceDataOutput
     {
         half3   albedo;             
@@ -205,11 +205,11 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
 
         surfaceData.emission = _EmissionColor.rgb * _EmissionColor.a * SAMPLE_TEXTURE2D(_EmissionMap, sampler_EmissionMap, uv);
 
-        //isExtraCustomPass is a compile time constant, writing this if() has 0 performance cost
-        //in this example, isExtraCustomPass is true only when executing the outline pass
+        //isExtraCustomPass is a compile time constant, so writing if() here has 0 performance cost.
+        //In this example shader, isExtraCustomPass is true only when executing the custom pass (outline pass)
         if(isExtraCustomPass)
         {
-            //make outline darker
+            //make outline pass darker
             surfaceData.albedo = 0;
             surfaceData.smoothness = 0;
             surfaceData.metallic = 0;
@@ -218,8 +218,8 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
     }
 
     //IMPORTANT: write your final fragment color edit logic here
-    //usually for gameplay logic's color override like "loop: lerp to red" for selectable targets, or flash white on taking damage.
-    //you can replace this function by a #include "Your own .hlsl" call, to share logic between different surface shaders
+    //usually for gameplay logic's color override or darken, like "loop: lerp to red" for selectable targets / flash white on taking damage / darken dead units...
+    //you can replace this function by a #include "Your_own_hlsl.hlsl" call, to share this function between different surface shaders
     void FinalPostProcessFrag(Varyings IN, UserSurfaceDataOutput surfaceData, LightingData lightingData, inout half4 inputColor)
     {
 #if _IsSelected
@@ -285,8 +285,8 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
  
         //__________________________________________[User editable section]__________________________________________\\
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //User can insert 1 extra custom passes
-        //for example, an outline pass
+        //User can insert 1 extra custom passes here.
+        //For example, an outline pass this time
         Pass
         {
             //no LightMode is needed for extra custom pass
@@ -325,10 +325,10 @@ Shader "Universal Render Pipeline/CustomSurfaceShader/01"
 
             //__________________________________________[User editable section]__________________________________________\\
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            //disabled due to outline pass, because we edited positionOS by bool isExtraCustomPass in UserGeometryDataOutputFunction(...)
+            //not using vertUniversalForward function due to outline pass edited positionOS by bool isExtraCustomPass in UserGeometryDataOutputFunction(...)
             //#pragma vertex vertUniversalForward
 
-            //because of outline pass, we use this instead, this will inlcude positionOS change in UserGeometryDataOutputFunction
+            //we use this instead, this will inlcude positionOS change in UserGeometryDataOutputFunction, include outline's vertex logic.
             #pragma vertex vertExtraCustomPass
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
