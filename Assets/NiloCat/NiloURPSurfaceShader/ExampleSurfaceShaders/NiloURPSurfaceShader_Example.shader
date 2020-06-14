@@ -179,13 +179,13 @@ Shader "Universal Render Pipeline/SurfaceShaders/ExampleSurfaceShader"
     }
 
     //MOST IMPORTANT: write your surface shader's fragment logic here
-    //you ONLY need re-write things that you want to change, you don't need to fill in all data inside UserSurfaceDataOutput!
-    //All unedited data inside UserSurfaceDataOutput will always use it's default value, just like shader graph's master node's default values.
-    //see struct UserSurfaceDataOutput inside NiloURPSurfaceShaderInclude.hlsl for all editable data and their default values 
-    //copy the whole UserSurfaceDataOutput struct here for your reference
+    //you ONLY need re-write things that you want to change, you don't need to fill in all data inside UserSurfaceOutputData!
+    //All unedited data inside UserSurfaceOutputData will always use it's default value, just like shader graph's master node's default values.
+    //see struct UserSurfaceOutputData inside NiloURPSurfaceShaderInclude.hlsl for all editable data and their default values 
+    //copy the whole UserSurfaceOutputData struct here for your reference
     /*
     //100% same as URP PBR shader graph's fragment input
-    struct UserSurfaceDataOutput
+    struct UserSurfaceOutputData
     {
         half3   albedo;             
         half3   normalTS;          
@@ -197,7 +197,7 @@ Shader "Universal Render Pipeline/SurfaceShaders/ExampleSurfaceShader"
         half    alphaClipThreshold;
     };
     */
-    void UserSurfaceDataOutputFunction(Varyings IN, inout UserSurfaceDataOutput surfaceData, bool isExtraCustomPass)
+    void UserSurfaceOutputDataFunction(Varyings IN, inout UserSurfaceOutputData surfaceData, bool isExtraCustomPass)
     {
         float2 uv = TRANSFORM_TEX(IN.uv, _BaseMap);
         
@@ -232,7 +232,7 @@ Shader "Universal Render Pipeline/SurfaceShaders/ExampleSurfaceShader"
     //IMPORTANT: write your final fragment color edit logic here
     //usually for gameplay logic's color override or darken, like "loop: lerp to red" for selectable targets / flash white on taking damage / darken dead units...
     //you can replace this function by a #include "Your_own_hlsl.hlsl" call, to share this function between different surface shaders
-    void FinalPostProcessFrag(Varyings IN, UserSurfaceDataOutput surfaceData, LightingData lightingData, inout half4 inputColor)
+    void FinalPostProcessFrag(Varyings IN, UserSurfaceOutputData surfaceData, LightingData lightingData, inout half4 inputColor)
     {
 #if _IsSelected
         inputColor.rgb = lerp(inputColor.rgb,_SelectedLerpColor.rgb, _SelectedLerpColor.a * (sin(_Time.y * 5) * 0.5 + 0.5));

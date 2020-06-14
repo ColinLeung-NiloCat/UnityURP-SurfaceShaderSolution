@@ -215,7 +215,7 @@ float3 GetWorldSpaceViewDir(float3 positionWS)
 /////////////////////////////////////////////////////////////////
 
 //100% same as URP PBR shader graph's fragment input
-struct UserSurfaceDataOutput
+struct UserSurfaceOutputData
 {
     half3   albedo;             
     half3   normalTS;          
@@ -233,21 +233,21 @@ struct LightingData
     Light   mainDirectionalLight;   //brightest direction light
     int     additionalLightCount;   //get all additional light by using forloop, each loop calls GetAdditionalLight(i, positionWS) to get each addition light
     half3   bakedIndirectDiffuse;   //raw color from light probe or light map
-    half3   bakedIndirectSpecular;  //raw color from reflection probe, cubemap blurryness affected by UserSurfaceDataOutput.smoothness
+    half3   bakedIndirectSpecular;  //raw color from reflection probe, cubemap blurryness affected by UserSurfaceOutputData.smoothness
     half3   viewDirectionWS;
     half3   reflectionDirectionWS;
     half3   normalWS;
     float3  positionWS;
 };
 
-// Forward declaration of UserSurfaceDataOutputFunction. This function must be defined in user's .shader surface shader file
-void UserSurfaceDataOutputFunction(Varyings IN, inout UserSurfaceDataOutput surfaceData, bool isExtraCustomPass);
+// Forward declaration of UserSurfaceOutputDataFunction. This function must be defined in user's .shader surface shader file
+void UserSurfaceOutputDataFunction(Varyings IN, inout UserSurfaceOutputData surfaceData, bool isExtraCustomPass);
 
-UserSurfaceDataOutput BuildUserSurfaceDataOutput(Varyings IN, bool isExtraCustomPass)
+UserSurfaceOutputData BuildUserSurfaceOutputData(Varyings IN, bool isExtraCustomPass)
 {
-    UserSurfaceDataOutput surfaceData;
+    UserSurfaceOutputData surfaceData;
 
-    //first init UserSurfaceDataOutput by default value (following PBR shader graph's default value)
+    //first init UserSurfaceOutputData by default value (following PBR shader graph's default value)
     surfaceData.albedo = 1;                 //default white             
     surfaceData.normalTS = half3(0,0,1);    //default pointing out, no difference to vertex normal        
     surfaceData.emission = 0;               //default black  
@@ -257,8 +257,8 @@ UserSurfaceDataOutput BuildUserSurfaceDataOutput(Varyings IN, bool isExtraCustom
     surfaceData.alpha = 1;                  //default fully opaque          
     surfaceData.alphaClipThreshold = 0;     //default 0, not 0.5, following PBR shader graph's default value
 
-    //then let user optionally override some/al; UserSurfaceDataOutput's values
-    UserSurfaceDataOutputFunction(IN, surfaceData, isExtraCustomPass);
+    //then let user optionally override some/al; UserSurfaceOutputData's values
+    UserSurfaceOutputDataFunction(IN, surfaceData, isExtraCustomPass);
 
     //safe guard user provided data (not sure if it is needed, because it cost performance here)
     surfaceData.albedo = max(0,surfaceData.albedo);
@@ -274,9 +274,9 @@ UserSurfaceDataOutput BuildUserSurfaceDataOutput(Varyings IN, bool isExtraCustom
 }
 
 // Forward declaration of CalculateSurfaceFinalResultColor. This function must be defined in user's .shader surface shader file
-half4 CalculateSurfaceFinalResultColor(Varyings IN, UserSurfaceDataOutput surfaceData, LightingData lightingData);
+half4 CalculateSurfaceFinalResultColor(Varyings IN, UserSurfaceOutputData surfaceData, LightingData lightingData);
 // Forward declaration of FinalPostProcessFrag. This function must be defined in user's .shader surface shader file
-void FinalPostProcessFrag(Varyings IN, UserSurfaceDataOutput surfaceData, LightingData lightingData, inout half4 inputColor);
+void FinalPostProcessFrag(Varyings IN, UserSurfaceOutputData surfaceData, LightingData lightingData, inout half4 inputColor);
 
 half4 fragAllWork(Varyings IN, bool shouldOnlyDoAlphaClipAndEarlyExit = false, bool isExtraCustomPass = false)
 {
@@ -286,7 +286,7 @@ half4 fragAllWork(Varyings IN, bool shouldOnlyDoAlphaClipAndEarlyExit = false, b
     IN.bitangentWS = normalize(IN.bitangentWS);
 
     //use user's surface function to produce final surface data
-    UserSurfaceDataOutput surfaceData = BuildUserSurfaceDataOutput(IN, isExtraCustomPass);
+    UserSurfaceOutputData surfaceData = BuildUserSurfaceOutputData(IN, isExtraCustomPass);
 
     //do alphaclip as soon as possible
     clip(surfaceData.alpha - surfaceData.alphaClipThreshold);

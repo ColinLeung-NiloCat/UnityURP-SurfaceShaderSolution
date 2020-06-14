@@ -1,5 +1,7 @@
 ﻿//see doc here: https://github.com/ColinLeung-NiloCat/UnityURP-SurfaceShaderSolution
 
+//it is just an example of custom lighting function.hlsl, it is not a good looking cel shade lighting function.hlsl
+//I will try converting https://github.com/ColinLeung-NiloCat/UnityURPToonLitShaderExample using this surface shader structure.
 #ifndef NiloPBRLitCelShadeLightingFunction_INCLUDE
 #define NiloPBRLitCelShadeLightingFunction_INCLUDE
 
@@ -60,7 +62,7 @@ half3 LightingPhysicallyBasedCelShade(BRDFData brdfData, Light light, half3 norm
     return LightingPhysicallyBasedCelShade(brdfData, light.color, light.direction, light.distanceAttenuation * light.shadowAttenuation, normalWS, viewDirectionWS);
 }
 
-half4 CalculateSurfaceFinalResultColor(Varyings IN, UserSurfaceDataOutput surfaceData, LightingData lightingData)
+half4 CalculateSurfaceFinalResultColor(Varyings IN, UserSurfaceOutputData surfaceData, LightingData lightingData)
 {
     // BRDFData holds energy conserving diffuse and specular material reflections and its roughness.
     // It's easy to plugin your own shading fuction. You just need replace LightingPhysicallyBased function
