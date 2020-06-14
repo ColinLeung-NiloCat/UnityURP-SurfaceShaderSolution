@@ -1,5 +1,5 @@
 # UnityURP-SurfaceShaderSolution
- A simple and flexible "surface shader" solution for Unity URP.
+ A tiny and flexible "surface shader" solution for Unity URP.
  
 Why writing this?
 -----------------------
