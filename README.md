@@ -59,20 +59,17 @@ Editable options
 How to try this surface shader in my own existing URP project, instead of cloning a complete project?
 -----------------------
 1) only clone Assets/NiloCat/NiloURPSurfaceShader folder into your URP project
-2) In your project, open NiloURPSurfaceShader_Example.shader, edit 
+2) In your project, open NiloURPSurfaceShader_Example.shader, edit the following according to your need:
 - UserGeometryDataOutputFunction(...)
 - UserSurfaceDataOutputFunction(...)
 - FinalPostProcessFrag(...)
 - #include "../LightingFunctionLibrary/XXXLightingFunction.hlsl"
-
-to see render result change.
-
 3)If you want to create your own "surface shader", clone a copy of NiloURPSurfaceShader_Example.shader before edit it, it is easier.
 
 Note
 -----------------------
-It is a very early WIP project and will change a lot, but I need to finish this in order to build more complex toon shaders on top of this project.
-If you are interested, you can clone it, try writing your own surface shader functions, see if the current "surface shader" design can fulfill your shader development needs.
+It is a very early WIP project and will change a lot, but I need to finish this in order to build more complex toon shaders on top of this project. This project will be pure .shader/.hlsl, to see how far we can reach without C# codegen.
+If you are interested in this "surface shader" concept, you can clone it, try writing your own surface shader functions, see if the current "surface shader" design can fulfill your shader development needs.
 
 You can send me suggestions/bug report, or open discussion/just chat in Issues tab, or even send pull requests are very welcome!
 
