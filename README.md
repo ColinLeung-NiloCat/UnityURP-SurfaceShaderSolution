@@ -1,5 +1,6 @@
 # UnityURP-SurfaceShaderSolution
  A tiny and flexible "surface shader" solution for Unity URP.
+A more ideal solution here: https://github.com/slipster216/UnityModularShaderPrototype
  
 Do I need this?
 -----------------------
